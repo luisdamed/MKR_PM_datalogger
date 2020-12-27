@@ -1,9 +1,9 @@
-String use2digits(uint8_t number) {
-  if (number < 10) {
-    return "0" + String(number); // print a 0 before if the number is < than 10
-  }
-  return String(number);
-}
+//String use2digits(uint8_t number) {
+//  if (number < 10) {
+//    return "0" + String(number); // print a 0 before if the number is < than 10
+//  }
+//  return String(number);
+//}
 
 
 int leapyear(uint16_t year)
@@ -53,7 +53,7 @@ void calendartime (uint8_t hour, uint8_t  day, uint8_t month, uint16_t year, uin
       }
 }    
 
-String GetRTCTime (String &timestamp){
+void GetRTCTime (){
   uint8_t hour = (rtc.getHours() + GMT);
   uint8_t mins = (rtc.getMinutes());
   uint8_t sec = (rtc.getSeconds());
@@ -64,6 +64,7 @@ String GetRTCTime (String &timestamp){
     if (hour >=24){
       calendartime (hour, day, month, year, daysInFebruary);
     }
-  timestamp = (use2digits(day) + "/" + use2digits(month) + "/" + String(year) + " " + use2digits(hour) + ":" + use2digits(mins) + ":" + use2digits(sec));
-  return timestamp;
+ snprintf_P(timestamp, sizeof(timestamp), PSTR("%02u/%02u/%u %02u:%02u:%02u"), day, month, year, hour, mins, sec);
+//" (use2digits(day) + "/" + use2digits(month) + "/" + String(year) + " " + use2digits(hour) + ":" + use2digits(mins) + ":" + use2digits(sec));
+//  return timestamp;
 }
