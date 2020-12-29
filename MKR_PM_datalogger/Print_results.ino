@@ -1,14 +1,13 @@
-void Print_results(char* timestamp, float rawPM25, float rawPM10, float temperature, float humidity, float pressure,
-                     float reportedPM25, float reportedPM10, float reportedTEMP, float reportedHUM, float reportedPRES) {
+void Print_results(char* timestamp) {
 
   // only print header first time
   if (header) {
     Serial.println(F("SDS011 Sensor"));
     Serial.println(F("Timestamp\tPM Concentration [μg/m3]\tPM Concentration [μg/m3]\tTemperature [°C]\tRelative humidity %\tAtmospheric pressure in [kPa]"));
 #ifdef UseAverage
-    Serial.print(F("Date   Time\tPM2.5\tPM10\tTemp\tRelHum\tPress\tavgPM2.5\tavgPM10\tavgTemp\tavgRelHum\tavgPress\r\n"));
+    Serial.print(F("Date     Time    \tPM2.5\tPM10\tTemp\tRelHum\tPress\tavgPM2.5\tavgPM10\tavgTemp\tavgRelHum\tavgPress\r\n"));
 #else
-    Serial.println(F("Date   Time\tPM2.5\tPM10\tTemp\tRelHum\tPress\r\n"));
+    Serial.println(F("Date     Time    \tPM2.5\tPM10\tTemp\tRelHum\tPress\r\n"));
 #endif
     header = false;
   }
@@ -76,52 +75,39 @@ void Print_results(char* timestamp, float rawPM25, float rawPM10, float temperat
     myFile.print(PRESS); //raw barometric pressure [kPa] to SD
   }
 
-
-  //  Serial.print(String(rawPM25) + "\t");//PM2.5 mass concentration from SDS011 in [μg/m3]
-  //  Serial.print(String(rawPM10) + "\t");//PM10 mass concentration from SDS011 in [μg/m3]
-  //  Serial.print(String(temperature) + "\t");//PM2.5 mass concentration from SDS011 in [μg/m3]
-  //  Serial.print(String(humidity) + "\t");//PM2.5 mass concentration from SDS011 in [μg/m3]
-  //  Serial.print(String(pressure) + "\t");//PM2.5 mass concentration from SDS011 in [μg/m3]
-
   if (readIndex >= numReadings) {
 
 #ifdef UseAverage
 
-    snprintf_P(avgPM25, sizeof(avgPM25), PSTR("%.2f\t"), reportedPM25);
+    snprintf_P(avgPM25, sizeof(avgPM25), PSTR("%.2f\t"), PM25_avg);
     Serial.print(avgPM25); //avg PM2.5 mass concentration [μg/m3] to Serial
     if (myFile) {
       myFile.print(avgPM25); //avg PM2.5 mass concentration [μg/m3] to SD
     }
 
-    snprintf_P(avgPM10, sizeof(avgPM10), PSTR("%.2f\t"), reportedPM10);
+    snprintf_P(avgPM10, sizeof(avgPM10), PSTR("%.2f\t"), PM10_avg);
     Serial.print(avgPM10); //avg PM10 mass concentration [μg/m3] to Serial
     if (myFile) {
       myFile.print(avgPM10); //avg PM10 mass concentration [μg/m3] to SD
     }
 
-    snprintf_P(avgTEMP, sizeof(avgTEMP), PSTR("%.2f\t"), reportedTEMP);
+    snprintf_P(avgTEMP, sizeof(avgTEMP), PSTR("%.2f\t"), TEMP_avg);
     Serial.print(avgTEMP); //avg temperature in °C to Serial
     if (myFile) {
       myFile.print(avgTEMP); //avg temperature in °C to SD
     }
 
-    snprintf_P(avgHUM, sizeof(avgHUM), PSTR("%.2f\t"), reportedHUM);
+    snprintf_P(avgHUM, sizeof(avgHUM), PSTR("%.2f\t"), HUM_avg);
     Serial.print(avgHUM);   //avg relative humidity % to Serial
     if (myFile) {
       myFile.print(avgHUM); //avg relative humidity % to SD
     }
 
-    snprintf_P(avgPRESS, sizeof(avgPRESS), PSTR("%.2f\t"), reportedPRES);
+    snprintf_P(avgPRESS, sizeof(avgPRESS), PSTR("%.2f\t"), PRES_avg);
     Serial.print(avgPRESS); //avg barometric pressure in kPa to Serial
     if (myFile) {
       myFile.print(avgPRESS); //avg barometric pressure in kPa to SD
     }
-
-    //    Serial.print(String(reportedPM25) + "\t"); //PM2.5 mass concentration from SDS011 in [μg/m3]
-    //    Serial.print(String(reportedPM10) + "\t"); //PM10 mass concentration from SDS011 in [μg/m3]
-    //    Serial.print(String(reportedTEMP) + "\t"); //PM2.5 mass concentration from SDS011 in [μg/m3]
-    //    Serial.print(String(reportedHUM) + "\t"); //PM2.5 mass concentration from SDS011 in [μg/m3]
-    //    Serial.print(String(reportedPRES) + "\t"); //PM2.5 mass concentration from SDS011 in [μg/m3]
 
 #endif
 

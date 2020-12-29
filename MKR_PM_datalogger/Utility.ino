@@ -86,8 +86,8 @@ void GetNTPtime () {
 
   // you're connected now, so print out the status:
   printWiFiStatus();
-  //  WiFi.setLEDs(0, 0, 255); // Blue
 
+  //Start the internal RTC
   rtc.begin();
 
   unsigned long epoch;
@@ -132,12 +132,12 @@ void CheckENV_MKR() {
 }
 
 void WakeUpSDS011() {
-  #ifndef NoSleep || ContinuousReading
-    Serial.println("Wake up SDS011 sensor");
-    WorkingStateResult result = sds.wakeup();
-    result.isWorking(); // true
+#ifndef NoSleep || ContinuousReading
+  Serial.println("Wake up SDS011 sensor");
+  WorkingStateResult result = sds.wakeup();
+  result.isWorking(); // true
 
-      if (result.isWorking() == false) {
+  if (result.isWorking() == false) {
     Serial.println("SDS011 sensor is not connected");
     while (1) {
       WiFi.setLEDs(255, 0, 0); // RED
@@ -147,12 +147,32 @@ void WakeUpSDS011() {
     }
   }
 
-    Serial.println("Waiting 30 seconds to have reliable readings from SDS011 sensor\n\rafter wake up from power off or sleep mode");
-    delay(30000); //Wait 30 seconds to obtain reliable readings from the sensor
-    Serial.println("Start of sensors sampling interval");
+  Serial.println("Waiting 30 seconds to have reliable readings from SDS011 sensor\n\rafter wake up from power off or sleep mode");
+  delay(30000); //Wait 30 seconds to obtain reliable readings from the sensor
+  Serial.println("Start of sensors sampling interval");
 #else
 #ifdef DebugMessages
-    Serial.println("Start of sensors sampling interval");
+  Serial.println("Start of sensors sampling interval");
 #endif
 #endif
+}
+
+void ComputeAvg () { // COmputes the average of the running average of the readings for the number of readings requested by the user
+  //Initialize the averages from zero
+  if (readIndex == 0) {
+    PM25_avg = 0;
+    PM10_avg = 0;
+    TEMP_avg = 0;
+    HUM_avg  = 0;
+    PRES_avg = 0;
+#ifdef DebugMessages
+    Serial.println("Averages initialized to zero");
+#endif
+  }
+  //Update the running average up to the current reading
+  PM25_avg += (rawPM25 - PM25_avg) / (readIndex + 1);
+  PM10_avg += (rawPM10 - PM10_avg) / (readIndex + 1);
+  TEMP_avg += (temperature - TEMP_avg) / (readIndex + 1);
+  HUM_avg  += (humidity  - HUM_avg ) / (readIndex + 1);
+  PRES_avg += (pressure - PRES_avg) / (readIndex + 1);
 }
