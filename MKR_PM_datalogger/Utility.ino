@@ -27,16 +27,6 @@ void printWiFiStatus() {
 void StartSDS011() {
   sds.begin();        // Initialize serial communication with the SDS011 sensor
 
-//  if (!sds.begin()) {
-//    Serial.println("SDS011 sensor is not connected");
-//    while (1) {
-//      WiFi.setLEDs(255, 0, 0); // RED
-//      delay (200);
-//      WiFi.setLEDs(255, 255, 0); // Yellow
-//      delay (200);
-//    }
-//  }
-
   Serial.println(sds.queryFirmwareVersion().toString()); // prints firmware version
   Serial.println(sds.setQueryReportingMode().toString()); // ensures sensor is in 'query' reporting mode
 #ifdef ContinuousReading
@@ -139,4 +129,30 @@ void CheckENV_MKR() {
     }
   }
   Serial.println(F("Initialized communications with MKR ENV shield"));
+}
+
+void WakeUpSDS011() {
+  #ifndef NoSleep || ContinuousReading
+    Serial.println("Wake up SDS011 sensor");
+    WorkingStateResult result = sds.wakeup();
+    result.isWorking(); // true
+
+      if (result.isWorking() == false) {
+    Serial.println("SDS011 sensor is not connected");
+    while (1) {
+      WiFi.setLEDs(255, 0, 0); // RED
+      delay (200);
+      WiFi.setLEDs(255, 255, 0); // Yellow
+      delay (200);
+    }
+  }
+
+    Serial.println("Waiting 30 seconds to have reliable readings from SDS011 sensor\n\rafter wake up from power off or sleep mode");
+    delay(30000); //Wait 30 seconds to obtain reliable readings from the sensor
+    Serial.println("Start of sensors sampling interval");
+#else
+#ifdef DebugMessages
+    Serial.println("Start of sensors sampling interval");
+#endif
+#endif
 }

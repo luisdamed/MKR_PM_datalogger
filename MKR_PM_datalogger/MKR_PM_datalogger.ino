@@ -61,8 +61,8 @@ float reportedPM25 = 0;               // the average PM25
 float reportedTEMP = 0;               // the average TEMP
 float reportedHUM = 0;                // the average HUM
 float reportedPRES = 0;               // the average PRES
-//String timestamp;
 char timestamp[21];
+static bool header = true;
 
 
 // Create objects
@@ -83,6 +83,7 @@ void setup() {
   }
   // Check the status of the MKR ENV Shield
   CheckENV_MKR ();
+
   // Initialize the SDS011 PM sensor
   StartSDS011();
 
@@ -99,29 +100,18 @@ void setup() {
 
 void loop() {
 
+  WiFi.setLEDs(0, 255, 0); // Turn RGB LED Green to mark the start of the loop
+  
+  if (readIndex == 0) {
+    //Wake up the SDS011 sensor and check that it is working correctly
+    WakeUpSDS011();
+  }
+
   //Get the current time from RTC
   GetRTCTime();
 
-  
-  WiFi.setLEDs(0, 255, 0); // Green
-  if (readIndex == 0) {
-#ifndef NoSleep || ContinuousReading
-    Serial.println("Wake up SDS011 sensor");
-    WorkingStateResult result = sds.wakeup();
-    result.isWorking(); // true
-
-    Serial.println("Waiting 30 seconds to have reliable readings from SDS011 sensor\n\rafter wake up from power off or sleep mode");
-    delay(30000); //Wait 30 seconds to obtain reliable readings from the sensor
-    Serial.println("Start of sensors sampling interval");
-#else
-#ifdef DebugMessages
-    Serial.println("Start of sensors sampling interval");
-#endif
-#endif
-  }
-
   WiFi.setLEDs(0, 0, 0); //
-  static bool header = true;
+ 
   PmResult pm = sds.queryPm();
 
   float rawPM10 = pm.pm10;
@@ -175,26 +165,11 @@ void loop() {
     reportedPRES = totalPRES / numReadings;                // the average PRES
   }
 
-  //#endif
 
   if (pm.isOk()) {
-    // only print header first time
-    if (header) {
-      Serial.println(F("SDS011 Sensor"));
-      Serial.println(F("Timestamp\tPM Concentration [μg/m3]\tPM Concentration [μg/m3]\tTemperature [°C]\tRelative humidity %\tAtmospheric pressure in [kPa]"));
-#ifdef UseAverage
-      Serial.print(F("Date   Time\tPM2.5\tPM10\tTemp\tRelHum\tPress\tavgPM2.5\tavgPM10\tavgTemp\tavgRelHum\tavgPress\r\n"));
-#else
-      Serial.println(F("Date   Time\tPM2.5\tPM10\tTemp\tRelHum\tPress\r\n"));
-#endif
-      header = false;
-
-    }
-
-    Print_to_Serial(timestamp, rawPM25, rawPM10, temperature,  humidity,  pressure,
+    //Write the results in the Serial monitor and the SD card if enabled
+    Print_results(timestamp, rawPM25, rawPM10, temperature,  humidity,  pressure,
                     reportedPM25, reportedPM10, reportedTEMP, reportedHUM, reportedPRES);
-    Serial.print("\r\n");
-
   }
 
   else {
@@ -224,9 +199,7 @@ void loop() {
     LowPower.sleep(LowPowerTime * 1000);
     alarmEvent0();
     Serial.print("Arduino MKR WIFI 1010 returned to normal operation mode\r\n");
-    //#else
-    //    Serial.print("Number of readings = ");
-    //    Serial.print(String(readIndex)+"\r\n");
+
 #endif
     readIndex = 0;
   }
