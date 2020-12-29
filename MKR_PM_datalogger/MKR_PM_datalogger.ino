@@ -17,17 +17,16 @@
 #include "SdsDustSensor.h"    //https://github.com/lewapek/sds-dust-sensors-arduino-library
 
 
-/* Define which functionalities you want to use
-   By uncommenting the following definitions, you can enable
-   different modes of operation of the sensor module.
+/* By uncommenting the following definitions, you can control how your sensor
+ * module will work.
    Please read the comments to see a brief description of each one
 */
 
-#define WriteToSD;          //  Enable the data-logging functionality
-#define UseNTPTime;         //  Using Network Time Protocol to get accurate timestamps
-#define UseAverage;         //  Uncomment to enable the use of averaged values
-//#define NoSleep;            //  Comment this line if you don't want the sensor module to enter low-power operation (sleep)
-//#define ContinuousReading;  //  Enable the default reading mode of the sensor
+#define WriteToSD;          //  Write the measured values on a text file stored in the micro SD card
+#define UseNTPTime;         //  Use Network Time Protocol to get accurate timestamps
+#define UseAverage;         //  Compute the average of the measured data coming from the sensors
+//#define NoSleep;            //  Prevent the sensor module from entering low-power (sleep) mode
+//#define ContinuousReading;  //  Configure the PM sensor to measure data as fast as it can (may be unreliable)
 //#define DebugMessages;      //  Enable debugging messages
 
 // Wifi connection credentials and reference time zone for NTP
@@ -46,18 +45,18 @@ const uint8_t LowPowerTime = 300;         // How many seconds the sensor spends 
 // Initialize  variables
 
 /*----------------------Raw values-------------------------*/
-float rawPM10;          // PM10  mass concentration in ug/m3
-float rawPM25;          // PM2.5 mass concentration in ug/m3
-float temperature;      // Temperature in °C
-float humidity;         // Relative Humidity %
-float pressure;         // Barometric pressure in kPa
+float rawPM10 = 0;          // PM10  mass concentration in ug/m3
+float rawPM25 = 0;          // PM2.5 mass concentration in ug/m3
+float temperature = 0;      // Temperature in °C
+float humidity = 0;         // Relative Humidity %
+float pressure = 0;         // Barometric pressure in kPa
 
 /*--------------------Averaged values----------------------*/
-float PM25_avg; // Average PM2.5 [ug/m3]
-float PM10_avg; // Average PM10  [ug/m3]
-float TEMP_avg; // Average Temperature [°C]
-float HUM_avg;  // Average relative humidity [%]
-float PRES_avg; // Average barometric pressure [kPa]
+float PM25_avg = 0; // Average PM2.5 [ug/m3]
+float PM10_avg = 0; // Average PM10  [ug/m3]
+float TEMP_avg = 0; // Average Temperature [°C]
+float HUM_avg = 0;  // Average relative humidity [%]
+float PRES_avg = 0; // Average barometric pressure [kPa]
 
 /*---------------Counting and formatting-------------------*/
 uint8_t readIndex = 0;     // current reading index
@@ -151,7 +150,7 @@ void loop() {
   }
 
 
-// Wait a certain number of seconds before restaring the loop
+// Wait before restarting the loop
 #ifdef ContinuousReading
   delay(1000);
 #else

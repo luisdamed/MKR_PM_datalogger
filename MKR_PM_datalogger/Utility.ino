@@ -24,21 +24,6 @@ void printWiFiStatus() {
 }
 
 
-void StartSDS011() {
-  sds.begin();        // Initialize serial communication with the SDS011 sensor
-
-  Serial.println(sds.queryFirmwareVersion().toString()); // prints firmware version
-  Serial.println(sds.setQueryReportingMode().toString()); // ensures sensor is in 'query' reporting mode
-#ifdef ContinuousReading
-  Serial.println(sds.setContinuousWorkingPeriod().toString()); // ensures sensor has continuous working period - default but not recommended
-#else
-  Serial.println(sds.setCustomWorkingPeriod(SensorWorkPeriod / 60).toString()); // sensor sends data every SensorWorkPeriod seconds
-#endif
-}
-
-
-
-
 void StartSDCard() {
   Serial.print(F("Initializing SD card..."));
 
@@ -131,6 +116,18 @@ void CheckENV_MKR() {
   Serial.println(F("Initialized communications with MKR ENV shield"));
 }
 
+void StartSDS011() {
+  sds.begin();        // Initialize serial communication with the SDS011 sensor
+
+  Serial.println(sds.queryFirmwareVersion().toString()); // prints firmware version
+  Serial.println(sds.setQueryReportingMode().toString()); // ensures sensor is in 'query' reporting mode
+#ifdef ContinuousReading
+  Serial.println(sds.setContinuousWorkingPeriod().toString()); // ensures sensor has continuous working period - default but not recommended
+#else
+  Serial.println(sds.setCustomWorkingPeriod(SensorWorkPeriod / 60).toString()); // sensor sends data every SensorWorkPeriod seconds
+#endif
+}
+
 void WakeUpSDS011() {
 #ifndef NoSleep || ContinuousReading
   Serial.println("Wake up SDS011 sensor");
@@ -138,7 +135,7 @@ void WakeUpSDS011() {
   result.isWorking(); // true
 
   if (result.isWorking() == false) {
-    Serial.println("SDS011 sensor is not connected");
+    Serial.println(F("SDS011 sensor is not connected"));
     while (1) {
       WiFi.setLEDs(255, 0, 0); // RED
       delay (200);
@@ -149,11 +146,10 @@ void WakeUpSDS011() {
 
   Serial.println("Waiting 30 seconds to have reliable readings from SDS011 sensor\n\rafter wake up from power off or sleep mode");
   delay(30000); //Wait 30 seconds to obtain reliable readings from the sensor
-  Serial.println("Start of sensors sampling interval");
 #else
-#ifdef DebugMessages
-  Serial.println("Start of sensors sampling interval");
-#endif
+  #ifdef DebugMessages
+    Serial.println("Start of sensors sampling interval");
+  #endif
 #endif
 }
 
