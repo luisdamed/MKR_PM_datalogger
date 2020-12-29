@@ -98,10 +98,8 @@ void setup() {
 
 
 void loop() {
-#ifdef DebugMessages
-  Serial.println("\n\nGetting current time from RTC");
-#endif
 
+  //Get the current time from RTC
   GetRTCTime();
 
   
