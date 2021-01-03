@@ -1,0 +1,3 @@
+[submodule "sds-dust-sensors-arduino-library"]
+	path = sds-dust-sensors-arduino-library
+	url = https://github.com/lewapek/sds-dust-sensors-arduino-library
