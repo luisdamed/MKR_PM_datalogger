@@ -1,3 +1,6 @@
 [submodule "sds-dust-sensors-arduino-library"]
 	path = sds-dust-sensors-arduino-library
 	url = https://github.com/lewapek/sds-dust-sensors-arduino-library
+[submodule "WiFiNINA"]
+	path = WiFiNINA
+	url = https://github.com/adafruit/WiFiNINA

@@ -103,6 +103,8 @@ void GetNTPtime () {
   WiFi.setLEDs(0, 0, 0); // Off
 }
 
+/* Check the status of the Arduino MKR ENV Shield 
+ * and stop if it is not connected or not working*/
 void CheckENV_MKR() {
   if (!ENV.begin()) {
     Serial.println(F("Failed to initialize MKR ENV shield!"));
@@ -116,24 +118,32 @@ void CheckENV_MKR() {
   Serial.println(F("Initialized communications with MKR ENV shield"));
 }
 
+/* Setup the SDS011 PM sensor */
 void StartSDS011() {
-  sds.begin();        // Initialize serial communication with the SDS011 sensor
-
+  sds.begin();        // start serial communication with the SDS011 sensor
   Serial.println(sds.queryFirmwareVersion().toString()); // prints firmware version
-  Serial.println(sds.setQueryReportingMode().toString()); // ensures sensor is in 'query' reporting mode
+  Serial.println(sds.setQueryReportingMode().toString()); // sets sensor to 'query' reporting mode
 #ifdef ContinuousReading
-  Serial.println(sds.setContinuousWorkingPeriod().toString()); // ensures sensor has continuous working period - default but not recommended
+  Serial.println(sds.setContinuousWorkingPeriod().toString()); // set the sensor to operate in continuous mode
 #else
-  Serial.println(sds.setCustomWorkingPeriod(SensorWorkPeriod / 60).toString()); // sensor sends data every SensorWorkPeriod seconds
+  Serial.println(sds.setCustomWorkingPeriod(SensorWorkPeriod / 60).toString()); // set the custom work period of the PM sensor
 #endif
 }
 
+
+/* Wake up the sensor from sleep mode and wait 30 seconds
+   This is done to obtain a reliable flow rate through the sensor
+   and to remove any existing dust deposit that may build up during sleep mode
+*/
 void WakeUpSDS011() {
 #ifndef NoSleep || ContinuousReading
   Serial.println("Wake up SDS011 sensor");
   WorkingStateResult result = sds.wakeup();
   result.isWorking(); // true
 
+  /*Warn the use if the sensor is not connected
+    The program will stop and the RGB light will blink red and yellow rapidly
+  */
   if (result.isWorking() == false) {
     Serial.println(F("SDS011 sensor is not connected"));
     while (1) {
@@ -147,9 +157,9 @@ void WakeUpSDS011() {
   Serial.println("Waiting 30 seconds to have reliable readings from SDS011 sensor\n\rafter wake up from power off or sleep mode");
   delay(30000); //Wait 30 seconds to obtain reliable readings from the sensor
 #else
-  #ifdef DebugMessages
-    Serial.println("Start of sensors sampling interval");
-  #endif
+#ifdef DebugMessages
+  Serial.println("Start of sensors sampling interval");
+#endif
 #endif
 }
 

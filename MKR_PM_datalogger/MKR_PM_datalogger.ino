@@ -1,26 +1,30 @@
-/* RTC functions based on  http://arduino.cc/en/Tutorial/WiFiRTC
-    The method for determining whether there is a leap year or not
-    was proposed by the user econjack here https://forum.arduino.cc/index.php?topic=226313.0
-
+/* PM data logger based on Arduino MKR Wifi 1010. Please see Readme.md for details
+   
    SDS011 library: https://github.com/lewapek/sds-dust-sensors-arduino-library
-
+   version 1.5.0
+   
+   WiFiNINA Library for Arduino (Adafruit's fork) https://github.com/adafruit/WiFiNINA
+   version 1.6.0
+   
+   RTCZero functions based on  http://arduino.cc/en/Tutorial/WiFiRTC
+   The method for detecting leap years is based on a post by user econjack here https://forum.arduino.cc/index.php?topic=226313.0
+   
    Luis Medina - luis.medina@polito.it
-   Release: 02-01-2021
+   Release: 03-01-2021
 */
 #include <Arduino.h>
 #include <Arduino_MKRENV.h>
 #include <SPI.h>
 #include <SD.h>
-#include <WiFiNINA.h>         //https://github.com/adafruit/WiFiNINA
+#include <WiFiNINA.h>         
 #include <WiFiUdp.h>
 #include <RTCZero.h>
 #include <ArduinoLowPower.h>
-#include "SdsDustSensor.h"    //https://github.com/lewapek/sds-dust-sensors-arduino-library
+#include "SdsDustSensor.h" 
 
 
-/* By uncommenting the following definitions, you can control how your sensor
- * module will work.
-   Please read the comments to see a brief description of each one
+/* Uncomment the following definitions to control how the sensor module will work.
+   Please read the comments to see a brief description of each definition
 */
 
 #define WriteToSD;          //  Write the measured values on a text file stored in the micro SD card
@@ -99,7 +103,7 @@ void setup() {
 
 #ifdef UseNTPTime
   /*Connect to the WIFI network and retrieve the reference time
-    Disconnect from WIFI once you received the time */
+    Disconnect from WIFI once  the time has been received*/
   GetNTPtime();
 #endif
 }
@@ -124,6 +128,7 @@ void loop() {
   PmResult pm = sds.queryPm();
   rawPM10 = pm.pm10;  // PM10  mass concentration in ug/m3
   rawPM25 = pm.pm25;  // PM2.5 mass concentration in ug/m3
+
 
   //Read from the MKR ENV Shield
 #ifdef DebugMessages
