@@ -5,8 +5,9 @@
    SDS011 library: https://github.com/lewapek/sds-dust-sensors-arduino-library
 
    Luis Medina - luis.medina@polito.it
-   Release: 29-12-2020
+   Release: 02-01-2021
 */
+#include <Arduino.h>
 #include <Arduino_MKRENV.h>
 #include <SPI.h>
 #include <SD.h>
@@ -35,14 +36,14 @@ char pass[] = "testpassword";     // your network password (use for WPA, or use 
 const uint8_t GMT = 1; //change this according to your current time zone. Notice the difference between summer and winter time
 
 // PM sensor working parameters
-const uint8_t numReadings = 10;    // How many readings the sensor will send after wake up
+const uint8_t numReadings = 5;    // How many readings the sensor will send after wake up
 const float SensorWorkPeriod = 1;    // Specify how often the sensor should send data (in seconds)
 const uint8_t LowPowerTime = 300;         // How many seconds the sensor spends in sleep mode between two consecutive sampling cycles
 
 /* -------------------------- No modifications are needed below this line --------------------------------------------------*/
 
 
-// Initialize  variables
+// Define global variables
 
 /*----------------------Raw values-------------------------*/
 float rawPM10 = 0;          // PM10  mass concentration in ug/m3
@@ -115,6 +116,7 @@ void loop() {
 
   //Get the current time from RTC
   GetRTCTime();
+  
   //Turn off the RGB LED
   WiFi.setLEDs(0, 0, 0); //
 
