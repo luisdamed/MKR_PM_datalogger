@@ -141,7 +141,7 @@ void WakeUpSDS011() {
   WorkingStateResult result = sds.wakeup();
   result.isWorking(); // true
 
-  /*Warn the use if the sensor is not connected
+  /*Warn the user if the sensor is not connected
     The program will stop and the RGB light will blink red and yellow rapidly
   */
   if (result.isWorking() == false) {
@@ -161,6 +161,17 @@ void WakeUpSDS011() {
   Serial.println("Start of sensors sampling interval");
 #endif
 #endif
+}
+
+//Read from the MKR ENV Shield
+void Read_ENV_MKR (float *temp, float *hum, float *pres){
+
+#ifdef DebugMessages
+  Serial.println("Getting data from MKR ENV shield");
+#endif
+  *temp  = ENV.readTemperature(); // Temperature in °C
+  *hum   = ENV.readHumidity();    // Relative Humidity %
+  *pres   = ENV.readPressure();    // Barometric pressure in kPa
 }
 
 void ComputeAvg () { // COmputes the average of the running average of the readings for the number of readings requested by the user

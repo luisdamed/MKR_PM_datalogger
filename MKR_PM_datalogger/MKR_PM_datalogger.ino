@@ -129,14 +129,8 @@ void loop() {
   rawPM10 = pm.pm10;  // PM10  mass concentration in ug/m3
   rawPM25 = pm.pm25;  // PM2.5 mass concentration in ug/m3
 
-
-  //Read from the MKR ENV Shield
-#ifdef DebugMessages
-  Serial.println("Getting data from MKR ENV shield");
-#endif
-  temperature = ENV.readTemperature(); // Temperature in °C
-  humidity    = ENV.readHumidity();    // Relative Humidity %
-  pressure    = ENV.readPressure();    // Barometric pressure in kPa
+//Read from the MKR ENV Shield
+Read_ENV_MKR (&temperature, &humidity, &pressure);
 
   //Compute the average of the readings, if requested by the user
 #ifdef UseAverage
