@@ -1,26 +1,27 @@
 /* PM data logger based on Arduino MKR Wifi 1010. Please see Readme.md for details
-   
+
    SDS011 library: https://github.com/lewapek/sds-dust-sensors-arduino-library
    version 1.5.0
-   
+
    WiFiNINA Library for Arduino (Adafruit's fork) https://github.com/adafruit/WiFiNINA
    version 1.6.0
-   
+
    RTCZero functions based on  http://arduino.cc/en/Tutorial/WiFiRTC
    The method for detecting leap years is based on a post by user econjack here https://forum.arduino.cc/index.php?topic=226313.0
-   
+
    Luis Medina - luis.medina@polito.it
-   Release: 03-01-2021
+   Release: 04-01-2021
 */
+
 #include <Arduino.h>
 #include <Arduino_MKRENV.h>
 #include <SPI.h>
 #include <SD.h>
-#include <WiFiNINA.h>         
+#include <WiFiNINA.h>
 #include <WiFiUdp.h>
 #include <RTCZero.h>
 #include <ArduinoLowPower.h>
-#include "SdsDustSensor.h" 
+#include "SdsDustSensor.h"
 
 
 /* Uncomment the following definitions to control how the sensor module will work.
@@ -120,7 +121,7 @@ void loop() {
 
   //Get the current time from RTC
   GetRTCTime();
-  
+
   //Turn off the RGB LED
   WiFi.setLEDs(0, 0, 0); //
 
@@ -129,8 +130,8 @@ void loop() {
   rawPM10 = pm.pm10;  // PM10  mass concentration in ug/m3
   rawPM25 = pm.pm25;  // PM2.5 mass concentration in ug/m3
 
-//Read from the MKR ENV Shield
-Read_ENV_MKR (&temperature, &humidity, &pressure);
+  //Read from the MKR ENV Shield
+  Read_ENV_MKR (&temperature, &humidity, &pressure);
 
   //Compute the average of the readings, if requested by the user
 #ifdef UseAverage
@@ -150,8 +151,7 @@ Read_ENV_MKR (&temperature, &humidity, &pressure);
     WiFi.setLEDs(255, 0, 0); // Turn the LED RED to indicate the faulty message
   }
 
-
-// Wait before restarting the loop
+  // Wait before restarting the loop
 #ifdef ContinuousReading
   delay(1000);
 #else
@@ -160,22 +160,13 @@ Read_ENV_MKR (&temperature, &humidity, &pressure);
 
   /*If the measuring cycle is complete, go to Low-power state */
   if (readIndex >= numReadings) {
-#ifndef NoSleep
-    
-    // Set SDS011 to sleep mode (turn off fan and laser)
-    Serial.print("Putting SDS011 sensor in sleep mode\r\n");
-    WorkingStateResult result = sds.sleep();
-    result.isWorking(); // false
-    Serial.print("SDS011 sensor is sleeping\r\n");
-    
-    // Put Arduino in low-power state
-    Serial.print("Arduino MKR WIFI 1010 is going to low-power consumption mode\r\n");
-    WiFi.setLEDs(0, 0, 0); // OFF
-    LowPower.sleep(LowPowerTime * 1000); //Wait for the time requested by the user
-    alarmEvent0(); //Wake up once the time has passed
-    Serial.print("Arduino MKR WIFI 1010 returned to normal operation mode\r\n");
-
-#endif
+    #ifndef NoSleep
+      // Set SDS011 to sleep mode (turn off fan and laser)
+      PMsensor_to_sleepmode();
+  
+      // Put Arduino in low-power state
+      Module_to_sleep();
+    #endif
     readIndex = 0;
   }
 }

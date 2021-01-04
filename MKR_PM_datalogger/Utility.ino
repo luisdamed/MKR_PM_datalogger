@@ -193,3 +193,21 @@ void ComputeAvg () { // COmputes the average of the running average of the readi
   HUM_avg  += (humidity  - HUM_avg ) / (readIndex + 1);
   PRES_avg += (pressure - PRES_avg) / (readIndex + 1);
 }
+
+
+// Set SDS011 to sleep mode (turn off fan and laser)
+void PMsensor_to_sleepmode(){
+    Serial.print("Putting SDS011 sensor in sleep mode\r\n");
+    WorkingStateResult result = sds.sleep();
+    result.isWorking(); // false
+    Serial.print("SDS011 sensor is sleeping\r\n");
+}
+
+// Put Arduino in low-power state
+void Module_to_sleep(){
+    Serial.print("Arduino MKR WIFI 1010 is going to low-power consumption mode\r\n");
+    WiFi.setLEDs(0, 0, 0); // OFF
+    LowPower.sleep(LowPowerTime * 1000); //Wait for the time requested by the user
+    alarmEvent0(); //Wake up once the time has passed
+    Serial.print("Arduino MKR WIFI 1010 returned to normal operation mode\r\n");
+}
