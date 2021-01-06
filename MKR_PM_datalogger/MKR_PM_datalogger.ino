@@ -10,7 +10,7 @@
    The method for detecting leap years is based on a post by user econjack here https://forum.arduino.cc/index.php?topic=226313.0
 
    Luis Medina - luis.medina@polito.it
-   Release: 04-01-2021
+   Release: 06-01-2021
 */
 
 #include <Arduino.h>
@@ -24,7 +24,7 @@
 #include "SdsDustSensor.h"
 
 
-/* Uncomment the following definitions to control how the sensor module will work.
+/* Uncomment the following definitions to control how the sensor module will work
    Please read the comments to see a brief description of each definition
 */
 
@@ -41,9 +41,9 @@ char pass[] = "testpassword";     // your network password (use for WPA, or use 
 const uint8_t GMT = 1; //change this according to your current time zone. Notice the difference between summer and winter time
 
 // PM sensor working parameters
-const uint8_t numReadings = 5;    // How many readings the sensor will send after wake up
-const float SensorWorkPeriod = 1;    // Specify how often the sensor should send data (in seconds)
-const uint8_t LowPowerTime = 300;         // How many seconds the sensor spends in sleep mode between two consecutive sampling cycles
+const uint8_t numReadings = 5;    // How many readings will be taken from the sensors after the module wakes up
+const float SensorWorkPeriod = 1;    // Work period of the PM sensor, in seconds
+const uint8_t LowPowerTime = 300;    // How many seconds the datalogger module stays in sleep mode between two consecutive sampling cycles
 
 /* -------------------------- No modifications are needed below this line --------------------------------------------------*/
 
