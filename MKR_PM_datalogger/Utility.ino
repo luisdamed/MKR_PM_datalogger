@@ -4,26 +4,63 @@
 void alarmEvent0() {
 }
 
-// Retrieve and display WiFi connection status
-void printWiFiStatus() {
-  // print the SSID of the network you're attached to:
-  Serial.print(F("SSID: "));
-  Serial.println(WiFi.SSID());
 
-  // print your WiFi shield's IP address:
-  IPAddress ip = WiFi.localIP();
-  Serial.print(F("IP Address: "));
-  Serial.println(ip);
 
-  // print the received signal strength:
-  long rssi = WiFi.RSSI();
-  Serial.print(F("signal strength (RSSI):"));
-  Serial.print(rssi);
-  Serial.println(F(" dBm"));
-  WiFi.setLEDs(0, 0, 255); // Blue
+
+
+// Prints Unique board ID
+void Print_board_ID() {
+  Serial.print(F("Arduino board unique ID: "));
+  for (size_t i = 0; i < UniqueIDsize; i++)
+  {
+    if (UniqueID[i] < 0x10)
+      Serial.print("0");
+    Serial.print(UniqueID[i], HEX);
+    Serial.print(F(" "));
+  }
+  Serial.println();
 }
 
 
+
+
+
+/* Check the status of the Arduino MKR ENV Shield
+   and stop if it is not connected or not working*/
+void CheckENV_MKR() {
+  if (!ENV.begin()) {
+    Serial.println(F("Failed to initialize MKR ENV shield!"));
+    while (1) {
+      WiFi.setLEDs(255, 0, 0); // RED
+      delay(200);
+      WiFi.setLEDs(0, 0, 0); // Off
+      delay(200);
+    }
+  }
+  Serial.println(F("Initialized communications with MKR ENV shield"));
+}
+
+
+
+
+
+/* Setup the SDS011 PM sensor */
+void StartSDS011() {
+  sds.begin();        // start serial communication with the SDS011 sensor
+  Serial.println(sds.queryFirmwareVersion().toString()); // prints firmware version
+  Serial.println(sds.setQueryReportingMode().toString()); // sets sensor to 'query' reporting mode
+#ifdef ContinuousReading
+  Serial.println(sds.setContinuousWorkingPeriod().toString()); // set the sensor to operate in continuous mode
+#else
+  Serial.println(sds.setCustomWorkingPeriod(SensorWorkPeriod / 60).toString()); // set the custom work period of the PM sensor
+#endif
+}
+
+
+
+
+
+// Start the SD card and create a text file
 void StartSDCard() {
   Serial.print(F("Initializing SD card..."));
 
@@ -35,11 +72,24 @@ void StartSDCard() {
   }
   Serial.println(F("SD card initialization done."));
 
-  myFile = SD.open("log.txt", FILE_WRITE); // create a test file
+  // Create a test file
+  myFile = SD.open("log.txt", FILE_WRITE);
 
-  if (myFile) { // if the file opened okay, write to it:
+  // if the file opened okay, write to it:
+  if (myFile) {
     Serial.print(F("Writing to log.txt..."));
-    myFile.println("SDS011 Sensor");
+
+    // Write the unique ID of the Arduino board
+    myFile.print("Board_ID: ");
+    for (size_t i = 0; i < UniqueIDsize; i++)
+    {
+      if (UniqueID[i] < 0x10)
+        myFile.print("0");
+      myFile.print(UniqueID[i], HEX);
+      myFile.print(" ");
+    }
+    myFile.println();
+
     myFile.println("Timestamp\tPM Concentration [μg/m3]\tPM Concentration [μg/m3]\tTemperature [°C]\tRelative humidity %\tAtmospheric pressure in [kPa]");
 #ifdef UseAverage
     myFile.print("Date   Time\tPM2.5\tPM10\tTemp\tRelHum\tPress\tavgPM2.5\tavgPM10\tavgTemp\tavgRelHum\tavgPress\n");
@@ -47,7 +97,8 @@ void StartSDCard() {
     myFile.println("Date   Time\tPM2.5\tPM10\tTemp\tRelHum\tPress\n");
 #endif
 
-    myFile.close();// close the file:
+    // Close the file:
+    myFile.close();
     Serial.println(F("done."));
   } else {
     Serial.println(F("error opening log.txt")); // if the file didn't open, print an error:
@@ -57,6 +108,11 @@ void StartSDCard() {
   }
 }
 
+
+
+
+
+// Get time reference from NTP
 void GetNTPtime () {
   while ( status != WL_CONNECTED) {
     Serial.print(F("Attempting to connect to SSID: "));
@@ -103,32 +159,31 @@ void GetNTPtime () {
   WiFi.setLEDs(0, 0, 0); // Off
 }
 
-/* Check the status of the Arduino MKR ENV Shield 
- * and stop if it is not connected or not working*/
-void CheckENV_MKR() {
-  if (!ENV.begin()) {
-    Serial.println(F("Failed to initialize MKR ENV shield!"));
-    while (1) {
-      WiFi.setLEDs(255, 0, 0); // RED
-      delay(200);
-      WiFi.setLEDs(0, 0, 0); // Off
-      delay(200);
-    }
-  }
-  Serial.println(F("Initialized communications with MKR ENV shield"));
+
+
+
+
+// Retrieve and display WiFi connection status
+void printWiFiStatus() {
+  // print the SSID of the network you're attached to:
+  Serial.print(F("SSID: "));
+  Serial.println(WiFi.SSID());
+
+  // print your WiFi shield's IP address:
+  IPAddress ip = WiFi.localIP();
+  Serial.print(F("IP Address: "));
+  Serial.println(ip);
+
+  // print the received signal strength:
+  long rssi = WiFi.RSSI();
+  Serial.print(F("signal strength (RSSI):"));
+  Serial.print(rssi);
+  Serial.println(F(" dBm"));
+  WiFi.setLEDs(0, 0, 255); // Blue
 }
 
-/* Setup the SDS011 PM sensor */
-void StartSDS011() {
-  sds.begin();        // start serial communication with the SDS011 sensor
-  Serial.println(sds.queryFirmwareVersion().toString()); // prints firmware version
-  Serial.println(sds.setQueryReportingMode().toString()); // sets sensor to 'query' reporting mode
-#ifdef ContinuousReading
-  Serial.println(sds.setContinuousWorkingPeriod().toString()); // set the sensor to operate in continuous mode
-#else
-  Serial.println(sds.setCustomWorkingPeriod(SensorWorkPeriod / 60).toString()); // set the custom work period of the PM sensor
-#endif
-}
+
+
 
 
 /* Wake up the sensor from sleep mode and wait 30 seconds
@@ -136,7 +191,7 @@ void StartSDS011() {
    and to remove any existing dust deposit that may build up during sleep mode
 */
 void WakeUpSDS011() {
-#ifndef NoSleep || ContinuousReading
+#ifndef NoSleep
   Serial.println("Wake up SDS011 sensor");
   WorkingStateResult result = sds.wakeup();
   result.isWorking(); // true
@@ -144,27 +199,31 @@ void WakeUpSDS011() {
   /*Warn the user if the sensor is not connected
     The program will stop and the RGB light will blink red and yellow rapidly
   */
-  if (result.isWorking() == false) {
-    Serial.println(F("SDS011 sensor is not connected"));
-    while (1) {
-      WiFi.setLEDs(255, 0, 0); // RED
-      delay (200);
-      WiFi.setLEDs(255, 255, 0); // Yellow
-      delay (200);
-    }
+    if (result.isWorking() == false) {
+      Serial.println(F("SDS011 sensor is not connected"));
+      while (1) {
+        WiFi.setLEDs(255, 0, 0); // RED
+        delay (200);
+        WiFi.setLEDs(255, 255, 0); // Yellow
+        delay (200);
+      }
   }
 
   Serial.println("Waiting 30 seconds to have reliable readings from SDS011 sensor\n\rafter wake up from power off or sleep mode");
   delay(30000); //Wait 30 seconds to obtain reliable readings from the sensor
 #else
-#ifdef DebugMessages
-  Serial.println("Start of sensors sampling interval");
-#endif
-#endif
+    #ifdef DebugMessages
+      Serial.println("Start of sensors sampling interval");
+    #endif // Debug messages statement
+#endif // NoSleep statement
 }
 
+
+
+
+
 //Read from the MKR ENV Shield
-void Read_ENV_MKR (float *temp, float *hum, float *pres){
+void Read_ENV_MKR (float *temp, float *hum, float *pres) {
 
 #ifdef DebugMessages
   Serial.println("Getting data from MKR ENV shield");
@@ -173,6 +232,10 @@ void Read_ENV_MKR (float *temp, float *hum, float *pres){
   *hum   = ENV.readHumidity();    // Relative Humidity %
   *pres   = ENV.readPressure();    // Barometric pressure in kPa
 }
+
+
+
+
 
 void ComputeAvg () { // COmputes the average of the running average of the readings for the number of readings requested by the user
   //Initialize the averages from zero
@@ -195,19 +258,22 @@ void ComputeAvg () { // COmputes the average of the running average of the readi
 }
 
 
+
+
+
 // Set SDS011 to sleep mode (turn off fan and laser)
-void PMsensor_to_sleepmode(){
-    Serial.print("Putting SDS011 sensor in sleep mode\r\n");
-    WorkingStateResult result = sds.sleep();
-    result.isWorking(); // false
-    Serial.print("SDS011 sensor is sleeping\r\n");
+void PMsensor_to_sleepmode() {
+  Serial.print("Putting SDS011 sensor in sleep mode\r\n");
+  WorkingStateResult result = sds.sleep();
+  result.isWorking(); // false
+  Serial.print("SDS011 sensor is sleeping\r\n");
 }
 
 // Put Arduino in low-power state
-void Module_to_sleep(){
-    Serial.print("Arduino MKR WIFI 1010 is going to low-power consumption mode\r\n");
-    WiFi.setLEDs(0, 0, 0); // OFF
-    LowPower.sleep(LowPowerTime * 1000); //Wait for the time requested by the user
-    alarmEvent0(); //Wake up once the time has passed
-    Serial.print("Arduino MKR WIFI 1010 returned to normal operation mode\r\n");
+void Module_to_sleep() {
+  Serial.print("Arduino MKR WIFI 1010 is going to low-power consumption mode\r\n");
+  WiFi.setLEDs(0, 0, 0); // OFF
+  LowPower.sleep(LowPowerTime * 1000); //Wait for the time requested by the user
+  alarmEvent0(); //Wake up once the time has passed
+  Serial.print("Arduino MKR WIFI 1010 returned to normal operation mode\r\n");
 }

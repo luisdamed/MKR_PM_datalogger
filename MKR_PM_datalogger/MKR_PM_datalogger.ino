@@ -1,16 +1,26 @@
 /* PM data logger based on Arduino MKR Wifi 1010. Please see Readme.md for details
 
    SDS011 library: https://github.com/lewapek/sds-dust-sensors-arduino-library
+   Author: Paweł Kołodziejczyk <lewapek@gmail.com>
    version 1.5.0
 
    WiFiNINA Library for Arduino (Adafruit's fork) https://github.com/adafruit/WiFiNINA
+   Author: Arduino <info@arduino.cc>
    version 1.6.0
 
-   RTCZero functions based on  http://arduino.cc/en/Tutorial/WiFiRTC
+   RTCZero functions based on  http://arduino.cc/en/Tutorial/WiFiRTC, repo: https://github.com/arduino-libraries/RTCZero
+   Author: Arduino <info@arduino.cc>
+   version 1.6.0
    The method for detecting leap years is based on a post by user econjack here https://forum.arduino.cc/index.php?topic=226313.0
 
+   Arduino Unique ID library: https://github.com/ricaun/ArduinoUniqueID 
+   Author: Luiz Henrique Cassettari <ricaun@gmail.com>
+   version=1.1.0
+
+
    Luis Medina - luis.medina@polito.it
-   Release: 06-01-2021
+   Date: 08-01-2021
+   version 1.0.1 
 */
 
 #include <Arduino.h>
@@ -21,6 +31,7 @@
 #include <WiFiUdp.h>
 #include <RTCZero.h>
 #include <ArduinoLowPower.h>
+#include <ArduinoUniqueID.h>
 #include "SdsDustSensor.h"
 
 
@@ -32,7 +43,7 @@
 #define UseNTPTime;         //  Use Network Time Protocol to get accurate timestamps
 #define UseAverage;         //  Compute the average of the measured data coming from the sensors
 //#define NoSleep;            //  Prevent the sensor module from entering low-power (sleep) mode
-//#define ContinuousReading;  //  Configure the PM sensor to measure data as fast as it can (may be unreliable)
+#define ContinuousReading;  //  Configure the PM sensor to measure data as fast as it can (may be unreliable)
 //#define DebugMessages;      //  Enable debugging messages
 
 // Wifi connection credentials and reference time zone for NTP
@@ -41,7 +52,7 @@ char pass[] = "testpassword";     // your network password (use for WPA, or use 
 const uint8_t GMT = 1; //change this according to your current time zone. Notice the difference between summer and winter time
 
 // PM sensor working parameters
-const uint8_t numReadings = 5;    // How many readings will be taken from the sensors after the module wakes up
+const uint8_t numReadings = 10;    // How many readings will be taken from the sensors after the module wakes up
 const float SensorWorkPeriod = 1;    // Work period of the PM sensor, in seconds
 const uint8_t LowPowerTime = 300;    // How many seconds the datalogger module stays in sleep mode between two consecutive sampling cycles
 
@@ -84,12 +95,14 @@ void setup() {
 
   //Initiate serial communication
   Serial.begin(9600);
-
+  
   // Wait a couple seconds while serial monitor is started
   if (! Serial) {
     WiFi.setLEDs(255, 255, 255); // white
     delay(5000);
   }
+  // Prints Unique board ID
+  Print_board_ID();
 
   // Check the status of the MKR ENV Shield
   CheckENV_MKR ();
@@ -133,7 +146,7 @@ void loop() {
   //Read from the MKR ENV Shield
   Read_ENV_MKR (&temperature, &humidity, &pressure);
 
-  //Compute the average of the readings, if requested by the user
+  //Compute the average of the readings, if requested by the user during setup
 #ifdef UseAverage
   ComputeAvg();
 #endif
@@ -141,7 +154,7 @@ void loop() {
   // Increment the count of readings:
   readIndex += 1;
 
-  //Write the results in the Serial monitor and the SD card if enabled
+  //Write the results in the Serial monitor and the SD card if enabled by the user during setup
   if (pm.isOk()) {
     Print_results(timestamp);
   }

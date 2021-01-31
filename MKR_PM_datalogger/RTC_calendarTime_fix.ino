@@ -17,6 +17,10 @@ void GetRTCTime () {
   snprintf_P(timestamp, sizeof(timestamp), PSTR("%02u/%02u/%u %02u:%02u:%02u"), day, month, year, hour, mins, sec);
 }
 
+
+
+
+
 int leapyear(uint16_t *testyear)
 {
   if ((*testyear) % 4 == 0 && (*testyear) % 100 != 0 || (*testyear) % 400 == 0)
@@ -24,6 +28,9 @@ int leapyear(uint16_t *testyear)
   else
     return 0;
 }
+
+
+
 
 
 void calendartime (uint8_t *l_hour, uint8_t *l_day, uint8_t *l_month, uint16_t *l_year, uint8_t *l_daysInFebruary)
