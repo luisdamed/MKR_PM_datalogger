@@ -2,7 +2,7 @@
  
  This datalogger module has been developed for use in the laboratory project of the course [Aerosol technology and air quality (ATAQ)](https://didattica.polito.it/pls/portal30/gap.pkg_guide.viewGap?p_cod_ins=01USDND&p_a_acc=2021&p_header=S&p_lang=IT "ATAQ course description at PoliTo's website") from Politecnico di Torino (01USDND, 01USDND, 01USDNE) in the academic year 2020-2021.
 
- This datalogger module based on Arduino MKR WiFi 1010, MKR ENV Shield and SDS011 PM sensor.
+ This datalogger module is based on Arduino MKR WiFi 1010, MKR ENV Shield and SDS011 PM sensor.
  Currently, the WiFi functionality is only used to synchronize RTCZero. This will be expanded in the future.
 
 
@@ -47,5 +47,13 @@ Date     Time	   PM2.5	PM10	Temp	RelHum	Press
 01/01/21 23:00:20	9.60	13.20	22.16	40.52	98.08	
 ```
 
+***
 
+
+
+## Assembly
+
+The datalogger can be assembled by the course students without soldering nor special tools. Only jumper wires are required. 
+
+An optional (yet, convenient) 3D printed frame can be used to accomodate all the electronics. The file
   
