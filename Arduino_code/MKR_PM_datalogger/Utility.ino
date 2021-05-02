@@ -52,7 +52,7 @@ void StartSDS011() {
 #ifdef ContinuousReading
   Serial.println(sds.setContinuousWorkingPeriod().toString()); // set the sensor to operate in continuous mode
 #else
-  Serial.println(sds.setCustomWorkingPeriod(SensorWorkPeriod / 60).toString()); // set the custom work period of the PM sensor
+  Serial.println(sds.setCustomWorkingPeriod(g_sensorWorkPeriod / 60).toString()); // set the custom work period of the PM sensor
 #endif
 }
 
@@ -240,21 +240,21 @@ void Read_ENV_MKR (float *temp, float *hum, float *pres) {
 void ComputeAvg () { // COmputes the average of the running average of the readings for the number of readings requested by the user
   //Initialize the averages from zero
   if (readIndex == 0) {
-    PM25_avg = 0;
-    PM10_avg = 0;
-    TEMP_avg = 0;
-    HUM_avg  = 0;
-    PRES_avg = 0;
+    g_PM25_avg = 0;
+    g_PM10_avg = 0;
+    g_TEMP_avg = 0;
+    g_HUM_avg  = 0;
+    g_PRES_avg = 0;
 #ifdef DebugMessages
     Serial.println("Averages initialized to zero");
 #endif
   }
   //Update the running average up to the current reading
-  PM25_avg += (rawPM25 - PM25_avg) / (readIndex + 1);
-  PM10_avg += (rawPM10 - PM10_avg) / (readIndex + 1);
-  TEMP_avg += (temperature - TEMP_avg) / (readIndex + 1);
-  HUM_avg  += (humidity  - HUM_avg ) / (readIndex + 1);
-  PRES_avg += (pressure - PRES_avg) / (readIndex + 1);
+  g_PM25_avg += (g_rawPM25 - g_PM25_avg) / (readIndex + 1);
+  g_PM10_avg += (g_rawPM10 - g_PM10_avg) / (readIndex + 1);
+  g_TEMP_avg += (g_temperature - g_TEMP_avg) / (readIndex + 1);
+  g_HUM_avg  += (g_humidity  - g_HUM_avg ) / (readIndex + 1);
+  g_PRES_avg += (g_pressure - g_PRES_avg) / (readIndex + 1);
 }
 
 
@@ -273,7 +273,7 @@ void PMsensor_to_sleepmode() {
 void Module_to_sleep() {
   Serial.print("Arduino MKR WIFI 1010 is going to low-power consumption mode\r\n");
   WiFi.setLEDs(0, 0, 0); // OFF
-  LowPower.sleep(LowPowerTime * 1000); //Wait for the time requested by the user
+  LowPower.sleep(g_lowPowerTime * 1000); //Wait for the time requested by the user
   alarmEvent0(); //Wake up once the time has passed
   Serial.print("Arduino MKR WIFI 1010 returned to normal operation mode\r\n");
 }

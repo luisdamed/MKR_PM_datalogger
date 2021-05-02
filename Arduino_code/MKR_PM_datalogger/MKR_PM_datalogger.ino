@@ -52,9 +52,9 @@ char pass[] = "testpassword";     // your network password (use for WPA, or use 
 const uint8_t GMT = 1; //change this according to your current time zone. Notice the difference between summer and winter time
 
 // PM sensor working parameters
-const uint8_t numReadings = 10;    // How many readings will be taken from the sensors after the module wakes up
-const float SensorWorkPeriod = 1;    // Work period of the PM sensor, in seconds
-const uint8_t LowPowerTime = 300;    // How many seconds the datalogger module stays in sleep mode between two consecutive sampling cycles
+const uint8_t g_numReadings = 10;    // How many readings will be taken from the sensors after the module wakes up
+const float g_sensorWorkPeriod = 1;    // Work period of the PM sensor, in seconds
+const uint8_t g_lowPowerTime = 300;    // How many seconds the datalogger module stays in sleep mode between two consecutive sampling cycles
 
 /* -------------------------- No modifications are needed below this line --------------------------------------------------*/
 
@@ -62,18 +62,18 @@ const uint8_t LowPowerTime = 300;    // How many seconds the datalogger module s
 // Define global variables
 
 /*----------------------Raw values-------------------------*/
-float rawPM10 = 0;          // PM10  mass concentration in ug/m3
-float rawPM25 = 0;          // PM2.5 mass concentration in ug/m3
-float temperature = 0;      // Temperature in °C
-float humidity = 0;         // Relative Humidity %
-float pressure = 0;         // Barometric pressure in kPa
+float g_rawPM10 = 0;          // PM10  mass concentration in ug/m3
+float g_rawPM25 = 0;          // PM2.5 mass concentration in ug/m3
+float g_temperature = 0;      // Temperature in °C
+float g_humidity = 0;         // Relative Humidity %
+float g_pressure = 0;         // Barometric pressure in kPa
 
 /*--------------------Averaged values----------------------*/
-float PM25_avg = 0; // Average PM2.5 [ug/m3]
-float PM10_avg = 0; // Average PM10  [ug/m3]
-float TEMP_avg = 0; // Average Temperature [°C]
-float HUM_avg = 0;  // Average relative humidity [%]
-float PRES_avg = 0; // Average barometric pressure [kPa]
+float g_PM25_avg = 0; // Average PM2.5 [ug/m3]
+float g_PM10_avg = 0; // Average PM10  [ug/m3]
+float g_TEMP_avg = 0; // Average Temperature [°C]
+float g_HUM_avg = 0;  // Average relative humidity [%]
+float g_PRES_avg = 0; // Average barometric pressure [kPa]
 
 /*---------------Counting and formatting-------------------*/
 uint8_t readIndex = 0;     // current reading index
@@ -140,11 +140,11 @@ void loop() {
 
   //Query new PM data from the SDS011 sensor
   PmResult pm = sds.queryPm();
-  rawPM10 = pm.pm10;  // PM10  mass concentration in ug/m3
-  rawPM25 = pm.pm25;  // PM2.5 mass concentration in ug/m3
+  g_rawPM10 = pm.pm10;  // PM10  mass concentration in ug/m3
+  g_rawPM25 = pm.pm25;  // PM2.5 mass concentration in ug/m3
 
   //Read from the MKR ENV Shield
-  Read_ENV_MKR (&temperature, &humidity, &pressure);
+  Read_ENV_MKR (&g_temperature, &g_humidity, &g_pressure);
 
   //Compute the average of the readings, if requested by the user during setup
 #ifdef UseAverage
@@ -168,11 +168,11 @@ void loop() {
 #ifdef ContinuousReading
   delay(1000);
 #else
-  delay(SensorWorkPeriod * 1000);
+  delay(g_sensorWorkPeriod * 1000);
 #endif
 
   /*If the measuring cycle is complete, go to Low-power state */
-  if (readIndex >= numReadings) {
+  if (readIndex >= g_numReadings) {
     #ifndef NoSleep
       // Set SDS011 to sleep mode (turn off fan and laser)
       PMsensor_to_sleepmode();
