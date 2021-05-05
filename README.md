@@ -55,5 +55,5 @@ Date     Time	   PM2.5	PM10	Temp	RelHum	Press
 
 The datalogger can be assembled by the course students without soldering nor special tools. Only jumper wires are required. 
 
-An optional (yet, convenient) 3D printed frame can be used to accomodate all the electronics.
+An optional (yet, convenient) 3D printed frame can be used to accomodate all the electronics. The file
   
