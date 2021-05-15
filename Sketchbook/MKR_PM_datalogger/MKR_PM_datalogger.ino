@@ -1,31 +1,36 @@
 /* PM data logger based on Arduino MKR Wifi 1010. Please see Readme.md for details
-
-   SDS011 library: https://github.com/lewapek/sds-dust-sensors-arduino-library
-   Author: Paweł Kołodziejczyk <lewapek@gmail.com>
-   version 1.5.0
-
-   WiFiNINA Library for Arduino (Adafruit's fork) https://github.com/adafruit/WiFiNINA
-   Author: Arduino <info@arduino.cc>
-   version 1.6.0
-
-   RTCZero functions based on  http://arduino.cc/en/Tutorial/WiFiRTC, repo: https://github.com/arduino-libraries/RTCZero
-   Author: Arduino <info@arduino.cc>
-   version 1.6.0
-   The method for detecting leap years is based on a post by user econjack here https://forum.arduino.cc/index.php?topic=226313.0
-
-   Arduino Unique ID library: https://github.com/ricaun/ArduinoUniqueID 
-   Author: Luiz Henrique Cassettari <ricaun@gmail.com>
-   version=1.1.0
-
-
-   Luis Medina - luis.medina@polito.it
-   Date: 08-01-2021
-   version 1.0.1 
+ *  
+ * Tested successfully on Arduino SAMD core version 1.8.7
+ *
+ * SDS011 library: https://github.com/lewapek/sds-dust-sensors-arduino-library
+ * Author: Paweł Kołodziejczyk <lewapek@gmail.com>
+ * version 1.5.0
+ *
+ * WiFiNINA Library for Arduino (Adafruit's fork) https://github.com/adafruit/WiFiNINA
+ * Author: Arduino <info@arduino.cc>
+ * version 1.3.0
+ *
+ * RTCZero functions based on  http://arduino.cc/en/Tutorial/WiFiRTC, repo: https://github.com/arduino-libraries/RTCZero
+ * Author: Arduino <info@arduino.cc>
+ * version 1.6.0
+ * The method for detecting leap years is based on a post by user econjack here https://forum.arduino.cc/index.php?topic=226313.0
+ * 
+ * Arduino Low Power 
+ * Author: Arduino <info@arduino.cc>
+ * Version 1.2.1
+ *
+ * Arduino Unique ID library: https://github.com/ricaun/ArduinoUniqueID 
+ * Author: Luiz Henrique Cassettari <ricaun@gmail.com>
+ * version=1.1.0
+ *
+ *
+ * Luis Medina - luis.medina@polito.it
+ * Date: 09-05-2021
+ * version 1.1.1 
 */
 
-#include <Arduino.h>
+//#include <Arduino.h>
 #include <Arduino_MKRENV.h>
-#include <SPI.h>
 #include <SD.h>
 #include <WiFiNINA.h>
 #include <WiFiUdp.h>
@@ -39,22 +44,20 @@
    Please read the comments to see a brief description of each definition
 */
 
-#define WriteToSD;          //  Write the measured values on a text file stored in the micro SD card
-#define UseNTPTime;         //  Use Network Time Protocol to get accurate timestamps
-#define UseAverage;         //  Compute the average of the measured data coming from the sensors
-//#define NoSleep;            //  Prevent the sensor module from entering low-power (sleep) mode
-#define ContinuousReading;  //  Configure the PM sensor to measure data as fast as it can (may be unreliable)
-//#define DebugMessages;      //  Enable debugging messages
+#define WriteToSD          //  Write the measured values on a text file stored in the micro SD card
+#define UseNTPTime         //  Use Network Time Protocol to get accurate timestamps
+#define UseAverage         //  Compute the average of the measured data coming from the sensors
+//#define NoSleep            //  Prevent the sensor module from entering low-power (sleep) mode
+//#define DebugMessages      //  Enable debugging messages
 
 // Wifi connection credentials and reference time zone for NTP
 char ssid[] = "my_SSID";        // your network SSID (name)
 char pass[] = "testpassword";     // your network password (use for WPA, or use as key for WEP)
-const uint8_t GMT = 1; //change this according to your current time zone. Notice the difference between summer and winter time
+const uint8_t GMT = 2; //change this according to your current time zone. Notice the difference between summer and winter time
 
 // PM sensor working parameters
-const uint8_t g_numReadings = 10;    // How many readings will be taken from the sensors after the module wakes up
-const float g_sensorWorkPeriod = 1;    // Work period of the PM sensor, in seconds
-const uint8_t g_lowPowerTime = 300;    // How many seconds the datalogger module stays in sleep mode between two consecutive sampling cycles
+const uint8_t g_numReadings = 5;    // How many readings will be taken from the sensors after the module wakes up
+uint16_t g_lowPowerTime = 300;    // How many seconds the datalogger module stays in sleep mode between two consecutive sampling cycles
 
 /* -------------------------- No modifications are needed below this line --------------------------------------------------*/
 
@@ -62,8 +65,8 @@ const uint8_t g_lowPowerTime = 300;    // How many seconds the datalogger module
 // Define global variables
 
 /*----------------------Raw values-------------------------*/
-float g_rawPM10 = 0;          // PM10  mass concentration in ug/m3
-float g_rawPM25 = 0;          // PM2.5 mass concentration in ug/m3
+//float g_rawPM10 = 0;          // PM10  mass concentration in ug/m3
+//float g_rawPM25 = 0;          // PM2.5 mass concentration in ug/m3
 float g_temperature = 0;      // Temperature in °C
 float g_humidity = 0;         // Relative Humidity %
 float g_pressure = 0;         // Barometric pressure in kPa
@@ -80,7 +83,6 @@ uint8_t readIndex = 0;     // current reading index
 char timestamp[21];        // to store and print the timestamp strings avoiding the "String" class to reduce heap fragmentation
 static bool header = true; // this is changed to false once the header is printed at the top of the data table
 
-
 SdsDustSensor sds(Serial1); // define serial port used to communicate with SDS011 sensor
 File myFile;                // text file
 RTCZero rtc;                // real time clock internal to the MKR WiFi 1010
@@ -89,9 +91,6 @@ int status = WL_IDLE_STATUS;
 
 
 void setup() {
-
-  //Be prepared to wake up using an interrupt based on the RTC
-  LowPower.attachInterruptWakeup(RTC_ALARM_WAKEUP, alarmEvent0, CHANGE);
 
   //Initiate serial communication
   Serial.begin(9600);
@@ -140,23 +139,18 @@ void loop() {
 
   //Query new PM data from the SDS011 sensor
   PmResult pm = sds.queryPm();
-  g_rawPM10 = pm.pm10;  // PM10  mass concentration in ug/m3
-  g_rawPM25 = pm.pm25;  // PM2.5 mass concentration in ug/m3
-
-  //Read from the MKR ENV Shield
-  Read_ENV_MKR (&g_temperature, &g_humidity, &g_pressure);
-
-  //Compute the average of the readings, if requested by the user during setup
-#ifdef UseAverage
-  ComputeAvg();
-#endif
-
-  // Increment the count of readings:
-  readIndex += 1;
-
+  
   //Write the results in the Serial monitor and the SD card if enabled by the user during setup
   if (pm.isOk()) {
-    Print_results(timestamp);
+    
+    // Reads data from the sensors and calculates the average
+    // Print results to serial and write to SD card
+    Get_data(timestamp, pm.pm25, pm.pm10, g_temperature = ENV.readTemperature(), 
+              g_humidity = ENV.readHumidity(), g_pressure = ENV.readPressure());
+    
+    // Increment the count of readings:
+    readIndex += 1;
+
   }
   else {
     Serial.print("Could not read values from SDS011 sensor, reason: ");
@@ -165,11 +159,7 @@ void loop() {
   }
 
   // Wait before restarting the loop
-#ifdef ContinuousReading
   delay(1000);
-#else
-  delay(g_sensorWorkPeriod * 1000);
-#endif
 
   /*If the measuring cycle is complete, go to Low-power state */
   if (readIndex >= g_numReadings) {
@@ -179,6 +169,7 @@ void loop() {
   
       // Put Arduino in low-power state
       Module_to_sleep();
+      
     #endif
     readIndex = 0;
   }

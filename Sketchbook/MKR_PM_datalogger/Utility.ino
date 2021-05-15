@@ -49,11 +49,7 @@ void StartSDS011() {
   sds.begin();        // start serial communication with the SDS011 sensor
   Serial.println(sds.queryFirmwareVersion().toString()); // prints firmware version
   Serial.println(sds.setQueryReportingMode().toString()); // sets sensor to 'query' reporting mode
-#ifdef ContinuousReading
   Serial.println(sds.setContinuousWorkingPeriod().toString()); // set the sensor to operate in continuous mode
-#else
-  Serial.println(sds.setCustomWorkingPeriod(g_sensorWorkPeriod / 60).toString()); // set the custom work period of the PM sensor
-#endif
 }
 
 
@@ -79,7 +75,7 @@ void StartSDCard() {
   if (myFile) {
     Serial.print(F("Writing to log.txt..."));
 
-    // Write the unique ID of the Arduino board
+    //Write the unique ID of the Arduino board
     myFile.print("Board_ID: ");
     for (size_t i = 0; i < UniqueIDsize; i++)
     {
@@ -118,7 +114,7 @@ void GetNTPtime () {
     Serial.print(F("Attempting to connect to SSID: "));
     WiFi.setLEDs(255, 255, 0); // Yellow
     Serial.println(ssid);
-    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+    // Connect to WPA/WPA2 network
     status = WiFi.begin(ssid, pass);
 
     // wait 10 seconds for connection:
@@ -200,7 +196,7 @@ void WakeUpSDS011() {
     The program will stop and the RGB light will blink red and yellow rapidly
   */
     if (result.isWorking() == false) {
-      Serial.println(F("SDS011 sensor is not connected"));
+      Serial.println(F("SDS011 sensor is not connected!"));
       while (1) {
         WiFi.setLEDs(255, 0, 0); // RED
         delay (200);
@@ -209,11 +205,11 @@ void WakeUpSDS011() {
       }
   }
 
-  Serial.println("Waiting 30 seconds to have reliable readings from SDS011 sensor\n\rafter wake up from power off or sleep mode");
-  delay(30000); //Wait 30 seconds to obtain reliable readings from the sensor
+  Serial.println("Waiting 30 seconds to have reliable readings from SDS011 sensor...");
+  delay(30000); //Wait 30 seconds
 #else
     #ifdef DebugMessages
-      Serial.println("Start of sensors sampling interval");
+      Serial.println("Start of sensors sampling interval...");
     #endif // Debug messages statement
 #endif // NoSleep statement
 }
@@ -222,58 +218,22 @@ void WakeUpSDS011() {
 
 
 
-//Read from the MKR ENV Shield
-void Read_ENV_MKR (float *temp, float *hum, float *pres) {
-
-#ifdef DebugMessages
-  Serial.println("Getting data from MKR ENV shield");
-#endif
-  *temp  = ENV.readTemperature(); // Temperature in °C
-  *hum   = ENV.readHumidity();    // Relative Humidity %
-  *pres   = ENV.readPressure();    // Barometric pressure in kPa
-}
-
-
-
-
-
-void ComputeAvg () { // COmputes the average of the running average of the readings for the number of readings requested by the user
-  //Initialize the averages from zero
-  if (readIndex == 0) {
-    g_PM25_avg = 0;
-    g_PM10_avg = 0;
-    g_TEMP_avg = 0;
-    g_HUM_avg  = 0;
-    g_PRES_avg = 0;
-#ifdef DebugMessages
-    Serial.println("Averages initialized to zero");
-#endif
-  }
-  //Update the running average up to the current reading
-  g_PM25_avg += (g_rawPM25 - g_PM25_avg) / (readIndex + 1);
-  g_PM10_avg += (g_rawPM10 - g_PM10_avg) / (readIndex + 1);
-  g_TEMP_avg += (g_temperature - g_TEMP_avg) / (readIndex + 1);
-  g_HUM_avg  += (g_humidity  - g_HUM_avg ) / (readIndex + 1);
-  g_PRES_avg += (g_pressure - g_PRES_avg) / (readIndex + 1);
-}
-
-
-
-
-
 // Set SDS011 to sleep mode (turn off fan and laser)
 void PMsensor_to_sleepmode() {
-  Serial.print("Putting SDS011 sensor in sleep mode\r\n");
+  Serial.print("Putting SDS011 sensor in sleep mode...\r\n");
   WorkingStateResult result = sds.sleep();
   result.isWorking(); // false
-  Serial.print("SDS011 sensor is sleeping\r\n");
+  Serial.print("SDS011 sensor is sleeping!\r\n");
 }
+
+
+
+
 
 // Put Arduino in low-power state
 void Module_to_sleep() {
-  Serial.print("Arduino MKR WIFI 1010 is going to low-power consumption mode\r\n");
+  
+  Serial.print("Going to low-power consumption mode for " + String(g_lowPowerTime/60) + " minutes...\r\n");
   WiFi.setLEDs(0, 0, 0); // OFF
-  LowPower.sleep(g_lowPowerTime * 1000); //Wait for the time requested by the user
-  alarmEvent0(); //Wake up once the time has passed
-  Serial.print("Arduino MKR WIFI 1010 returned to normal operation mode\r\n");
+  LowPower.deepSleep(g_lowPowerTime * 1000); //Wait for the time requested by the user
 }
